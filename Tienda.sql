@@ -8,13 +8,13 @@ CREATE TABLE IF NOT EXISTS Clientes (
   ciudad VARCHAR(255),
   pais VARCHAR(255),
   telefono VARCHAR(40)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS Categorias (
   id INT PRIMARY KEY AUTO_INCREMENT,
   nombre_categoria VARCHAR(255) NOT NULL,
   descripcion TEXT
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS Empleados (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -24,13 +24,13 @@ CREATE TABLE IF NOT EXISTS Empleados (
   fecha_nacimiento DATE,
   pais VARCHAR(255),
   telefono VARCHAR(40)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS Transportistas (
   id INT PRIMARY KEY AUTO_INCREMENT,
   nombre_empresa VARCHAR(255) NOT NULL,
   telefono VARCHAR(40)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS Proveedores (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS Proveedores (
   ciudad VARCHAR(255),
   pais VARCHAR(255),
   telefono VARCHAR(40)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS Productos (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS Productos (
   precio_unitario DECIMAL(10,2) NOT NULL CHECK (precio_unitario >= 0),
   unidades_en_stock INT NOT NULL DEFAULT 0 CHECK (unidades_en_stock >= 0),
   unidades_en_pedido INT NOT NULL DEFAULT 0 CHECK (unidades_en_pedido >= 0)
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS Pedidos (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS Pedidos (
   CONSTRAINT fk_pedidos_clientes FOREIGN KEY (cliente_id) REFERENCES Clientes(id) ON UPDATE CASCADE ON DELETE RESTRICT,
   CONSTRAINT fk_pedidos_empleados FOREIGN KEY (empleado_id) REFERENCES Empleados(id) ON UPDATE CASCADE ON DELETE SET NULL,
   CONSTRAINT fk_pedidos_transportistas FOREIGN KEY (envio_por) REFERENCES Transportistas(id) ON UPDATE CASCADE ON DELETE SET NULL
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS DetallesPedidos (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS DetallesPedidos (
   descuento DECIMAL(5,2) NOT NULL DEFAULT 0 CHECK (descuento BETWEEN 0 AND 1),
   CONSTRAINT fk_detalles_pedidos FOREIGN KEY (pedido_id) REFERENCES Pedidos(id) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT fk_detalles_productos FOREIGN KEY (producto_id) REFERENCES Productos(id) ON UPDATE CASCADE ON DELETE RESTRICT
-) ENGINE=InnoDB;
+);
 
 CREATE TABLE IF NOT EXISTS Registros (
   id INT PRIMARY KEY AUTO_INCREMENT,
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS Registros (
   precio_unitario DECIMAL(10,2),
   CONSTRAINT fk_registros_pedidos FOREIGN KEY (pedido_id) REFERENCES Pedidos(id) ON UPDATE CASCADE ON DELETE SET NULL,
   CONSTRAINT fk_registros_productos FOREIGN KEY (producto_id) REFERENCES Productos(id) ON UPDATE CASCADE ON DELETE SET NULL
-) ENGINE=InnoDB;
+);
 
 CREATE INDEX idx_pedidos_cliente ON Pedidos(cliente_id);
 CREATE INDEX idx_pedidos_empleado ON Pedidos(empleado_id);
@@ -153,54 +153,3 @@ INSERT INTO Registros (pedido_id, producto_id, cantidad, precio_unitario) VALUES
   (3, 3, 4, 650.00),
   (4, 4, 1, 1500.00),
   (5, 5, 2, 2200.00);
-
-
-#---------------------------------------------------------------------------------------
-
-SELECT c.nombre_contacto AS Cliente, p.id AS Pedido
-FROM Clientes c
-INNER JOIN Pedidos p ON c.id = p.cliente_id
-ORDER BY c.nombre_contacto;
-
-SELECT pr.nombre_producto AS Producto, pr.precio_unitario AS Precio, dp.cantidad AS Cantidad
-FROM
-    DetallesPedidos dp
-    INNER JOIN Productos pr ON dp.producto_id = pr.id
-ORDER BY pr.nombre_producto;
-
-SELECT
-    c.nombre_contacto AS Cliente,
-    p.id AS Pedido,
-    p.fecha_envio AS Fecha_Envio
-FROM Pedidos p
-    INNER JOIN Clientes c ON p.cliente_id = c.id
-ORDER BY c.nombre_contacto, p.fecha_envio;
-
-SELECT DISTINCT
-    c.nombre_contacto AS Cliente
-FROM Clientes c
-    INNER JOIN Pedidos p ON c.id = p.cliente_id;
-
-SELECT pr.nombre_producto AS Producto, p.id AS Pedido, c.nombre_contacto AS Cliente
-FROM
-    DetallesPedidos dp
-    INNER JOIN Productos pr ON dp.producto_id = pr.id
-    INNER JOIN Pedidos p ON dp.pedido_id = p.id
-    INNER JOIN Clientes c ON p.cliente_id = c.id
-WHERE
-    pr.nombre_producto = 'CCC';
-
-SELECT
-    c.nombre_contacto AS Cliente,
-    p.id AS Pedido,
-    SUM(
-        dp.cantidad * dp.precio_unitario
-    ) AS Monto_Total
-FROM
-    Pedidos p
-    INNER JOIN Clientes c ON p.cliente_id = c.id
-    INNER JOIN DetallesPedidos dp ON p.id = dp.pedido_id
-GROUP BY
-    c.nombre_contacto,
-    p.id
-ORDER BY c.nombre_contacto;
