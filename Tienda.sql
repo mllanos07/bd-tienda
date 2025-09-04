@@ -153,3 +153,53 @@ INSERT INTO Registros (pedido_id, producto_id, cantidad, precio_unitario) VALUES
   (3, 3, 4, 650.00),
   (4, 4, 1, 1500.00),
   (5, 5, 2, 2200.00);
+
+---------------------------------------------------------------------------------------
+
+SELECT c.nombre_contacto AS Cliente, p.id AS Pedido
+FROM Clientes c
+INNER JOIN Pedidos p ON c.id = p.cliente_id
+ORDER BY c.nombre_contacto;
+
+SELECT pr.nombre_producto AS Producto, pr.precio_unitario AS Precio, dp.cantidad AS Cantidad
+FROM
+    DetallesPedidos dp
+    INNER JOIN Productos pr ON dp.producto_id = pr.id
+ORDER BY pr.nombre_producto;
+
+SELECT
+    c.nombre_contacto AS Cliente,
+    p.id AS Pedido,
+    p.fecha_envio AS Fecha_Envio
+FROM Pedidos p
+    INNER JOIN Clientes c ON p.cliente_id = c.id
+ORDER BY c.nombre_contacto, p.fecha_envio;
+
+SELECT DISTINCT
+    c.nombre_contacto AS Cliente
+FROM Clientes c
+    INNER JOIN Pedidos p ON c.id = p.cliente_id;
+
+SELECT pr.nombre_producto AS Producto, p.id AS Pedido, c.nombre_contacto AS Cliente
+FROM
+    DetallesPedidos dp
+    INNER JOIN Productos pr ON dp.producto_id = pr.id
+    INNER JOIN Pedidos p ON dp.pedido_id = p.id
+    INNER JOIN Clientes c ON p.cliente_id = c.id
+WHERE
+    pr.nombre_producto = 'CCC';
+
+SELECT
+    c.nombre_contacto AS Cliente,
+    p.id AS Pedido,
+    SUM(
+        dp.cantidad * dp.precio_unitario
+    ) AS Monto_Total
+FROM
+    Pedidos p
+    INNER JOIN Clientes c ON p.cliente_id = c.id
+    INNER JOIN DetallesPedidos dp ON p.id = dp.pedido_id
+GROUP BY
+    c.nombre_contacto,
+    p.id
+ORDER BY c.nombre_contacto;
